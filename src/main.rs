@@ -146,6 +146,7 @@ fn main() -> Result<(), Box<dyn Error>> {
             },
             Action::SetSettings(desktop, json) => {
                 saver.set_settings(desktop, json);
+                saver.save_settings()?;
             }
             Action::Exit => {
                 println!("\nExiting");
