@@ -70,6 +70,7 @@ impl SettingSaver {
         Ok(())
     }
     fn save_settings(&mut self) -> Result<(), Box<dyn Error>> {
+        println!("Saving settings");
         let mut file = File::create(Path::new(&self.file_path))?;
         for (key, value) in &self.settings {
             file.write((key.clone() + "\n").as_bytes())?;
@@ -79,9 +80,11 @@ impl SettingSaver {
         Ok(())
     }
     fn get_settings(&self, desktop: String) -> String {
+        println!("Getting settings for desktop {desktop}");
         self.settings.get(&desktop).unwrap_or(&"".to_string()).clone()
     }
     fn set_settings(&mut self, desktop: String, settings: String) {
+        println!("Setting settings for desktop {desktop} to {settings}");
         self.settings.insert(desktop, settings);
     }
 }
@@ -115,7 +118,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         });
         b.method("GetSettings", ("desktop",), ("desktop","json",), move |_ctx: &mut Context, (tx, rx): &mut (Sender<Action>, Receiver<String>), (desktop,): (String,)| {
             // And here's what happens when the method is called.
-            println!("Getting settings");
             let desktop_ret = desktop.clone();
             tx.send(Action::GetSettings(desktop)).unwrap();
             let json = rx.recv().unwrap();
@@ -123,7 +125,6 @@ fn main() -> Result<(), Box<dyn Error>> {
         });
         b.method("SetSettings", ("desktop", "json",), (), move |_ctx: &mut Context, (tx, _rx): &mut (Sender<Action>, Receiver<String>), (desktop, json,): (String, String,)| {
             // And here's what happens when the method is called.
-            println!("Setting settings");
             tx.send(Action::SetSettings(desktop, json)).unwrap();
             Ok(())
         });
