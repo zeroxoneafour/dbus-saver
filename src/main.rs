@@ -42,6 +42,7 @@ impl Default for SettingSaver {
         file_path += "/SettingSaver";
         DirBuilder::new().recursive(true).create(&file_path).unwrap();
         file_path += "/settings.txt";
+        println!("Loading settings from {file_path}");
         let mut ret = Self {
             file_path,
             settings: HashMap::default(),
@@ -55,7 +56,14 @@ impl SettingSaver {
     fn read_settings(&mut self) -> Result<(), Box<dyn Error>> {
         let mut read_key = true;
         let mut old_key = "".to_string();
-        let file = File::open(Path::new(&self.file_path))?;
+        let file;
+        let path = Path::new(&self.file_path);
+        if let Ok(f) = File::open(path) {
+            file = f;
+        } else {
+            File::create(path)?;
+            file = File::open(path)?;
+        };
         for l in BufReader::new(file).lines() {
             let line = l?;
             if read_key { // reading key
