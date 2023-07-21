@@ -56,14 +56,7 @@ impl SettingSaver {
     fn read_settings(&mut self) -> Result<(), Box<dyn Error>> {
         let mut read_key = true;
         let mut old_key = "".to_string();
-        let file;
-        let path = Path::new(&self.file_path);
-        if let Ok(f) = File::open(path) {
-            file = f;
-        } else {
-            File::create(path)?;
-            file = File::open(path)?;
-        };
+        let Ok(file) = File::open(Path::new(&self.file_path)) else { return Ok(()) };
         for l in BufReader::new(file).lines() {
             let line = l?;
             if read_key { // reading key
@@ -120,12 +113,13 @@ fn main() -> Result<(), Box<dyn Error>> {
         b.method("Exists", (), ("true",), move |_, _, _: ()| {
             Ok((true,))
         });
-        b.method("GetSettings", ("desktop",), ("json",), move |_ctx: &mut Context, (tx, rx): &mut (Sender<Action>, Receiver<String>), (desktop,): (String,)| {
+        b.method("GetSettings", ("desktop",), ("desktop","json",), move |_ctx: &mut Context, (tx, rx): &mut (Sender<Action>, Receiver<String>), (desktop,): (String,)| {
             // And here's what happens when the method is called.
             println!("Getting settings");
+            let desktop_ret = desktop.clone();
             tx.send(Action::GetSettings(desktop)).unwrap();
             let json = rx.recv().unwrap();
-            Ok((json,))
+            Ok((desktop_ret,json,))
         });
         b.method("SetSettings", ("desktop", "json",), (), move |_ctx: &mut Context, (tx, _rx): &mut (Sender<Action>, Receiver<String>), (desktop, json,): (String, String,)| {
             // And here's what happens when the method is called.
