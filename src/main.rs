@@ -87,11 +87,16 @@ impl SettingSaver {
         println!("Setting settings for desktop {desktop} to {settings}");
         self.settings.insert(desktop, settings);
     }
+    fn remove_settings(&mut self, desktop: String) {
+        println!("Removing settings for desktop {desktop}");
+        self.settings.remove(&desktop);
+    }
 }
 
 enum Action {
     GetSettings(String),
     SetSettings(String, String),
+    RemoveSettings(String),
     Exit,
 }
 
@@ -128,6 +133,11 @@ fn main() -> Result<(), Box<dyn Error>> {
             tx.send(Action::SetSettings(desktop, json)).unwrap();
             Ok(())
         });
+        b.method("RemoveSettings", ("desktop",), (), move |_ctx: &mut Context, (tx, _rx): &mut (Sender<Action>, Receiver<String>), (desktop,): (String,)| {
+            // And here's what happens when the method is called.
+            tx.send(Action::RemoveSettings(desktop)).unwrap();
+            Ok(())
+        });
     });
 
     // Let's add the "/hello" path, which implements the com.example.dbustest interface,
@@ -147,6 +157,10 @@ fn main() -> Result<(), Box<dyn Error>> {
             },
             Action::SetSettings(desktop, json) => {
                 saver.set_settings(desktop, json);
+                saver.save_settings()?;
+            },
+            Action::RemoveSettings(desktop) => {
+                saver.remove_settings(desktop);
                 saver.save_settings()?;
             }
             Action::Exit => {
