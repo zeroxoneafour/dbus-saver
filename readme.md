@@ -1,3 +1,7 @@
+## deprecated in favor of copy in polonium repo
+
+See the updated code at https://github.com/zeroxoneafour/polonium/tree/master/dbus-saver
+
 # dbus-saver
 
 A daemon written in Rust, intended to be used alongside Polonium for setting management per-desktop.
